@@ -17,7 +17,7 @@ CVL = 0
 
 #variables de control
 TP = 30000
-DL = 20
+DL = 50 #poner como porcentaje ejemplo: 50 en lugar de 0.5
 STR = 2000
 
 #auxiliares
@@ -25,13 +25,14 @@ T = 0
 PRECIO1 = 1196500
 PRECIO2 = PRECIO1 * 0.70
 PRECIO3 = PRECIO2 * 0.70
-FV = 1
-FP = 1
+FV = 1.0
+FP = 1.0
 BEN = 0
 LIQ = 0
 DES = 0
 TOT = 0
 VDT = 0
+diasEspeciales = [5,167,359] #dias en los que las ventas suben un porcentaje fijo
 
 #TEF
 FLL = 1
@@ -41,6 +42,8 @@ def main():
     while T < 356* 10:
         T += 1
         
+        determinar_fecha_especial()
+
         if T == FLL:
             reponer()
 
@@ -54,14 +57,28 @@ def main():
     
     imprimir_resultados()
 
+
+def determinar_fecha_especial():
+    global T, diasEspeciales, FP, FV, DL
+    FP = 1.0
+    FV = 1.0
+    for k in diasEspeciales:
+        if T % 365 == k - 365:
+            FV = 1.2
+    
+    if T % 365 == 0:
+        FP = DL
+        FV = (0.5* DL*DL +1.8 *DL - 1.18)/100
+            
         
 def imprimir_resultados():
     print("BA = " + str(BEN*365/T))
-    print("L = " + str(LIQ))
-    print("T = " + str(TOT))
     print("LT = " + str(LIQ/TOT))
     print("PLA = " + str(LIQ*365/T))
     print("PDA = " + str(DES*365/T))
+    print("ST1 = " + str(ST1))
+    print("ST2 = " + str(ST2))
+    print("ST3 = " + str(ST3))
 
 def cerrar_anio():
     global LIQ, VDT, DES, ST1, ST2, ST3
@@ -80,8 +97,8 @@ def calcular_ventas_diarias():
     global VD1, VD2, VD3, ST1, ST2,ST3, VDT, BEN
 
     VD1 = random.randint(200, 700)
-    VD2 = random.randint(100, 350)
-    VD3 = random.randint(30, 100)
+    VD2 = random.randint(40, 140)
+    VD3 = random.randint(8, 28)
 
     VDT = 0
 
@@ -112,3 +129,10 @@ def reponer():
     FLL = 0
 
 main()
+
+#observaciones
+#no se desechan celulares a menos que las reposiciones sean ridiculamente grandes
+#posible solucion 1: incluir reposicion de celulares viejos
+
+#el sistema no tiene nocion de las ventas perdidas por falta de stock
+#posible solucion 1: incluir un resultado que contemple las ventas perdidas
