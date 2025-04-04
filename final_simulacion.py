@@ -16,9 +16,12 @@ DP = 0
 CVL = 0
 
 #variables de control
-TP = 30000
+TP1 = 10000
+TP2 = 4000
+TP3 = 500
+STR = 500
 DL = 50 #poner como porcentaje ejemplo: 50 en lugar de 0.5
-STR = 2000
+
 
 #auxiliares
 T = 0
@@ -33,24 +36,38 @@ DES = 0
 TOT = 0
 VDT = 0
 diasEspeciales = [5,167,359] #dias en los que las ventas suben un porcentaje fijo
+factorCosto = 0.8
+factorGanancia = 0.2
+
 
 #TEF
-FLL = 1
+FLL1 = 1
+FLL2 = 1
+FLL3 = 1
 
 def main():
-    global T, FLL, ST1, VD1, ST2, STR
+    global T, FLL1, FLL2, FLL3, ST1, VD1, ST2, STR, ST3, TP1, TP2, TP3
     while T < 356* 10:
         T += 1
         
         determinar_fecha_especial()
 
-        if T == FLL:
-            reponer()
+        if T == FLL1:
+            reponer1()
+        if T == FLL2:
+            reponer2()
+        if T == FLL3:
+            reponer3()
 
         calcular_ventas_diarias()
 
-        if ST1 < STR and FLL < T:
-            realizar_pedido()
+        if ST1 < STR:
+            if FLL1 < T:
+                realizar_pedido1()
+            if FLL2 < T:
+                realizar_pedido2()
+            if FLL3 < T:
+                realizar_pedido3()
 
         if T % 365 == 0:
             cerrar_anio()
@@ -72,10 +89,13 @@ def determinar_fecha_especial():
             
         
 def imprimir_resultados():
+    print("----------------------resultados--------------------------")
     print("BA = " + str(BEN*365/T))
     print("LT = " + str(LIQ/TOT))
     print("PLA = " + str(LIQ*365/T))
     print("PDA = " + str(DES*365/T))
+
+    print("------------------variables de interes--------------------")
     print("ST1 = " + str(ST1))
     print("ST2 = " + str(ST2))
     print("ST3 = " + str(ST3))
@@ -88,10 +108,20 @@ def cerrar_anio():
     ST2 = ST1
     ST1 = 0
 
-def realizar_pedido():
-    global DP, FLL, T
+def realizar_pedido1():
+    global DP, T, FLL1
     DP = random.randint(2,5)
-    FLL = T + DP
+    FLL1 = T + DP
+
+def realizar_pedido2():
+    global DP, T, FLL2
+    DP = random.randint(2,5)
+    FLL2 = T + DP
+
+def realizar_pedido3():
+    global DP, T, FLL3
+    DP = random.randint(2,5)
+    FLL3 = T + DP
 
 def calcular_ventas_diarias():
     global VD1, VD2, VD3, ST1, ST2,ST3, VDT, BEN
@@ -102,15 +132,15 @@ def calcular_ventas_diarias():
 
     VDT = 0
 
-    BEN += min(ST1, VD1*FV)* PRECIO1 * FP
+    BEN += min(ST1, VD1*FV)* PRECIO1 * FP *factorGanancia
     VDT += min(ST1, VD1*FV) 
     ST1 = max(ST1-VD1*FV, 0)
 
-    BEN += min(ST2, VD2*FV)* PRECIO2 * FP
+    BEN += min(ST2, VD2*FV)* PRECIO2 * FP *factorGanancia
     VDT += min(ST2, VD2*FV) 
     ST2 = max(ST2-VD2*FV, 0)
 
-    BEN += min(ST3, VD3*FV)* PRECIO3 * FP
+    BEN += min(ST3, VD3*FV)* PRECIO3 * FP *factorGanancia
     VDT += min(ST3, VD3*FV) 
     ST3 = max(ST3-VD3*FV, 0)
 
@@ -122,17 +152,30 @@ def restar_stock(stock, ventas, precio):
         stock = 0
         VDT
 
-def reponer():
-    global ST1, TOT, FLL
-    ST1 += TP
-    TOT += TP
-    FLL = 0
+def reponer1():
+    global TOT, ST1, FLL1, BEN, PRECIO1
+    ST1 += TP1
+    TOT += TP1
+    BEN -= PRECIO1*factorCosto
+    FLL1 = 0
+
+def reponer2():
+    global TOT, ST2, FLL2, BEN, PRECIO2
+    ST2 += TP2
+    TOT += TP2
+    BEN -= PRECIO2*factorCosto
+    FLL2 = 0
+
+def reponer3():
+    global TOT, ST3, FLL3, BEN, PRECIO3
+    ST3 += TP3
+    TOT += TP3
+    BEN -= PRECIO3*factorCosto
+    FLL3 = 0
+
 
 main()
 
 #observaciones
-#no se desechan celulares a menos que las reposiciones sean ridiculamente grandes
-#posible solucion 1: incluir reposicion de celulares viejos
-
 #el sistema no tiene nocion de las ventas perdidas por falta de stock
 #posible solucion 1: incluir un resultado que contemple las ventas perdidas
